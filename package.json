@@ -1,0 +1,25 @@
+{
+  "name": "gridkit",
+  "version": "1.0.0", "description": "A CSS Grid to Flexbox Fallback system",
+  "main": "gulpfile.js",
+  "scripts": {
+    "start": "gulp",
+    "build": "gulp build --production"
+  },
+  "author": "KBall <kball@zendev.com>",
+  "license": "",
+  "devDependencies": {
+    "gulp": "gulpjs/gulp#4.0",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-clean-css": "^3.3.1",
+    "gulp-cli": "^1.2.1",
+    "gulp-load-plugins": "^1.1.0",
+    "gulp-sass": "^2.1.0",
+    "gulp-sourcemaps": "^1.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kball/gridkit.git"
+  },
+  "private": true
+}
