@@ -1,1 +1,32 @@
 @import 'gridkit';
+
+@include grid-context {
+  .grid {
+    @include grid();
+    @include grid-gap(1em 2em);
+    @include grid-template-columns(repeat(2, 1fr))
+    @include grid-template-rows(50vh 30vh repeat(7, minmax(20vh, 1fr)))
+
+    @include grid-template-areas(
+      "small1 hero   hero hero med1   med1"
+      "small2 hero   hero hero med2   med2"
+      "small3 small5 big1 big1 small7 small8"
+      "small4 small6 big1 big1 small9 small10"
+    )
+
+    .item:nth-child(1) { @include grid-area(hero) }
+    .item:nth-child(2) { @include grid-area(big1) }
+    .item:nth-child(3) { @include grid-area(med1) }
+    .item:nth-child(4) { @include grid-area(med2) }
+    .item:nth-child(5) { @include grid-area(small1) }
+    .item:nth-child(6) { @include grid-area(small2) }
+    .item:nth-child(7) { @include grid-area(small3) }
+    .item:nth-child(8) { @include grid-area(small4) }
+    .item:nth-child(9) { @include grid-area(small5) }
+    .item:nth-child(10) { @include grid-area(small6) }
+    .item:nth-child(11) { @include grid-area(small7) }
+    .item:nth-child(12) { @include grid-area(small8) }
+    .item:nth-child(13) { @include grid-area(small9) }
+    .item:nth-child(14) { @include grid-area(small10) }
+  }
+}

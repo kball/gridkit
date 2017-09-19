@@ -1,0 +1,72 @@
+@mixin grid-context {
+  $-gridkit-context: () !global;
+  @content;
+}
+
+// In order to be compatible across grid and flex we need to translate repeats
+// into explicit
+@function repeat($count, $val) {
+  $str: $val;
+  @for $i from 2 through $count {
+    $str: $str + " " + $val;
+  }
+  @return $str;
+}
+
+// https://stackoverflow.com/questions/32376461/how-to-split-a-string-into-two-lists-of-numbers-in-sass
+@function str-split($string, $separator) {
+    // empty array/list
+    $split-arr: ();
+    // first index of separator in string
+    $index : str-index($string, $separator);
+    // loop through string
+    @while $index != null {
+        // get the substring from the first character to the separator
+        $item: str-slice($string, 1, $index - 1);
+        // push item to array
+        $split-arr: append($split-arr, $item);
+        // remove item and separator from string
+        $string: str-slice($string, $index + 1);
+        // find new index of separator
+        $index : str-index($string, $separator);
+    }
+    // add the remaining string to list (the last item)
+    $split-arr: append($split-arr, $string);
+
+    @return $split-arr;
+}
+
+@function get-areas-matrix {
+  $areas: map-get($-gridkit-context, areas);
+  $matrix: ();
+  @for $i from 1 through length($areas) {
+    $matrix: append($matrix, str-split(nth($areas, $i), " "));
+  }
+  @return $matrix;
+}
+
+@function update-area-map($map, $area, $x, $y) {
+  $obj: (x: 9999999, y: 9999999, width: 0, height: 0);
+  @if map-has-key($map, $area) {
+    $obj: $map-get($map, $area);
+  }
+
+  $x: min(map-get($obj, x), $x);
+  $y: min(map-get($obj, y), $y);
+  $height: map-get($obj, height) + 1;
+  $width: map-get($obj, height) + 1;
+  @return map-merge($map, ($area: (x: $x, y: $y, height: $height, width: $width)))
+}
+
+@function get-areas-map {
+  $matrix: get-areas-matrix();
+  $map: ();
+  @for $y from 1 through length($matrix) {
+    $row: nth($matrix, $y);
+    @for $x from 1 through length($row) {
+      $area: nth($row, $y);
+      $map: update-area-map($map, $area, $x, $y);
+    }
+  }
+}
+

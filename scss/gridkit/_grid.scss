@@ -1,0 +1,41 @@
+@import 'gridkit/flex';
+
+@mixin grid() {
+  display: flex;
+  flex-flow: row-wrap;
+  @supports(display: grid) {
+    display: grid;
+  }
+}
+
+@mixin grid-gap($gap) {
+  $-gridkit-context: map-merge($-gridkit-context, (gap: $gap)) !global;
+  grid-gap: $gap;
+}
+
+
+@mixin grid-template-columns($columns) {
+  $-gridkit-context: map-merge($-gridkit-context, (columns: $columns)) !global;
+  grid-template-columns: $columns;
+}
+
+@mixin grid-template-rows($rows) {
+  $-gridkit-context: map-merge($-gridkit-context, (rows: $rows)) !global;
+  grid-template-columns: $rows;
+}
+
+@mixin grid-template-areas($areas) {
+  $-gridkit-context: map-merge($-gridkit-context, (areas: $areas)) !global;
+  grid-template-areas: $areas;
+}
+
+@mixin grid-area($area) {
+  @supports not (display: grid) {
+    @include flex-computed-area($area);
+    @include flex-computed-margin();
+  }
+
+  @supports(display: grid) {
+    grid-area: $area;
+  }
+}

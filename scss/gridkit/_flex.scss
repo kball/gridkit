@@ -1,0 +1,19 @@
+
+@mixin flex-computed-margin() {
+  @if map-has-key($-gridkit-context, gap) {
+    $gap: map-get($-gridkit-context, gap);
+    $x: null;
+    $y: null;
+    @if length($gap) == 1 {
+      $x: $gap / 2;
+      $y: $gap / 2;
+    } @else {
+      $x: nth($gap, 1) / 2;
+      $y: nth($gap, 2) / 2;
+    }
+    margin: $y $x;
+  }
+}
+
+@mixin flex-computed-area($area) {
+}
