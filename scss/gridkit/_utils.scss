@@ -141,7 +141,7 @@
   $str: 'calc(' + nth($values, 1);
   @if (length($values) > 1) {
     @for $i from 2 through length($values) {
-      $str: $str + ' + ' nth($values, $i)
+      $str: '#{$str} + #{nth($values, $i)}'
     }
   }
   $str: $str + ')';

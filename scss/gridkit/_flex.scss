@@ -17,6 +17,6 @@
 
 @mixin flex-computed-area($area) {
   flex: 0 0 auto;
-  width: width-string($area);
-  height: height-string($area);
+  width: #{width-string($area)};
+  height: #{height-string($area)};
 }

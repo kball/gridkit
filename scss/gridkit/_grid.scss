@@ -16,12 +16,12 @@
 
 @mixin grid-template-columns($columns) {
   $-gridkit-context: map-merge($-gridkit-context, (columns: $columns)) !global;
-  grid-template-columns: $columns;
+  grid-template-columns: #{$columns};
 }
 
 @mixin grid-template-rows($rows) {
   $-gridkit-context: map-merge($-gridkit-context, (rows: $rows)) !global;
-  grid-template-columns: $rows;
+  grid-template-columns: #{$rows};
 }
 
 @mixin grid-template-areas($areas) {
