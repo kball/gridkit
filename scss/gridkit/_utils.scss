@@ -40,9 +40,31 @@
     @return $split-arr;
 }
 
-@function translate-fr($value) {
-  // TODO: Actually make this work to translate fr into a value.
-  @return $value;
+@function is-fr($value) {
+  @return (str-index(inspect($value), 'fr') != null);
+}
+
+// $direction should be either columns or rows
+@function translate-fr($value, $direction) {
+  @if (is-fr($value)) {
+    $vals: str-split(map-get($-gridkit-context, $direction), ' ');
+    $numFrs: 0;
+    $calcStr: '(0';
+    @for $i from 1 through length($vals) {
+      $val: nth($vals, $i);
+      @if (is-fr($val)) {
+        $numFrs: $numFrs + 1;
+      } @else {
+        $calcStr: '#{$calcStr} + #{$val}';
+      }
+    }
+    $calcStr: '#{$calcStr})';
+    $fr-value: '((100% - #{$calcStr}) / #{$numFrs})';
+    $val: nth(str-split($value, 'fr'), 1);
+    @return '(#{$val} * #{$fr-value})';
+  } @else {
+    @return $value;
+  }
 }
 
 @function get-areas-matrix {
@@ -99,10 +121,10 @@
 
     //TODO: Deal with auto (non explicit);
     @for $col from map-get($area, min-x) through map-get($area, max-x) {
-      $widths: append($widths, translate-fr(nth($columns, $col)));
+      $widths: append($widths, translate-fr(nth($columns, $col), columns));
     }
     @for $row from map-get($area, min-y) through map-get($area, max-y) {
-      $heights: append($heights, translate-fr(nth($rows, $row)));
+      $heights: append($heights, translate-fr(nth($rows, $row), rows));
     }
     $area: map-merge($area, (widths: $widths, heights: $heights));
     $map: map-merge($map, ($key: $area));
@@ -118,7 +140,7 @@
 @function cached-areas-map {
   @if map-has-key($-gridkit-context, areas-map) {
     @return map-get($-gridkit-context, areas-map);
-  } @else { 
+  } @else {
     $-gridkit-context: map-merge($-gridkit-context, (areas-map: get-annotated-areas-map())) !global;
     @return map-get($-gridkit-context, areas-map);
   }
