@@ -9,6 +9,7 @@
   "author": "KBall <kball@zendev.com>",
   "license": "",
   "devDependencies": {
+    "browser-sync": "^2.10.0",
     "gulp": "gulpjs/gulp#4.0",
     "gulp-autoprefixer": "^3.1.0",
     "gulp-clean-css": "^3.3.1",

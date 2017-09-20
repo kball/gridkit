@@ -28,7 +28,8 @@ function sass() {
       includePaths: ['scss']
     }).on('error', $.sass.logError))
     .pipe($.autoprefixer({
-      browsers: COMPATIBILITY
+      browsers: COMPATIBILITY,
+      grid: false
     }))
     .pipe($.sourcemaps.write())
     .pipe(gulp.dest('dist/css'))
