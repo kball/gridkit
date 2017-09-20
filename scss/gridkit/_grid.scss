@@ -3,30 +3,40 @@
 @mixin grid() {
   display: flex;
   flex-flow: row-wrap;
-  @supports(display: grid) {
-    display: grid;
+  @if ($use-grid) {
+    @supports(display: grid) {
+      display: grid;
+    }
   }
 }
 
 @mixin grid-gap($gap) {
   $-gridkit-context: map-merge($-gridkit-context, (gap: $gap)) !global;
-  grid-gap: $gap;
+  @if ($use-grid) {
+    grid-gap: $gap;
+  }
 }
 
 
 @mixin grid-template-columns($columns) {
   $-gridkit-context: map-merge($-gridkit-context, (columns: $columns)) !global;
-  grid-template-columns: #{$columns};
+  @if ($use-grid) {
+    grid-template-columns: #{$columns};
+  }
 }
 
 @mixin grid-template-rows($rows) {
   $-gridkit-context: map-merge($-gridkit-context, (rows: $rows)) !global;
-  grid-template-columns: #{$rows};
+  @if ($use-grid) {
+    grid-template-columns: #{$rows};
+  }
 }
 
 @mixin grid-template-areas($areas) {
   $-gridkit-context: map-merge($-gridkit-context, (areas: $areas)) !global;
-  grid-template-areas: $areas;
+  @if ($use-grid) {
+    grid-template-areas: $areas;
+  }
 }
 
 @mixin grid-area($area) {
@@ -35,7 +45,9 @@
     @include flex-computed-margin();
   }
 
-  @supports(display: grid) {
-    grid-area: $area;
+  @if ($use-grid) {
+    @supports(display: grid) {
+      grid-area: $area;
+    }
   }
 }
