@@ -52,9 +52,11 @@
       @include flex-computed-margin();
     }
 
-    @media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {  
-      @include flex-computed-area($area);
-      @include flex-computed-margin();
+    @if ($ie-fallback) {
+      @media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {  
+        @include flex-computed-area($area);
+        @include flex-computed-margin();
+      }
     }
   } @else {
     @include flex-computed-area($area);
