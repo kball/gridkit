@@ -43,18 +43,21 @@
 
 @mixin grid-area($area) {
   @if ($use-grid) {
+    @supports(display: grid) {
+      grid-area: $area;
+    }
+
     @supports not (display: grid) {
+      @include flex-computed-area($area);
+      @include flex-computed-margin();
+    }
+
+    @media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {  
       @include flex-computed-area($area);
       @include flex-computed-margin();
     }
   } @else {
     @include flex-computed-area($area);
     @include flex-computed-margin();
-  }
-
-  @if ($use-grid) {
-    @supports(display: grid) {
-      grid-area: $area;
-    }
   }
 }

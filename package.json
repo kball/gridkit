@@ -1,6 +1,7 @@
 {
   "name": "gridkit",
-  "version": "1.0.0", "description": "A CSS Grid to Flexbox Fallback system",
+  "version": "1.0.0",
+  "description": "A CSS Grid to Flexbox Fallback system",
   "main": "gulpfile.js",
   "scripts": {
     "start": "gulp",
