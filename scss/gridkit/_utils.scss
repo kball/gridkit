@@ -13,7 +13,8 @@
   @return $str;
 }
 
-// https://stackoverflow.com/questions/32376461/how-to-split-a-string-into-two-lists-of-numbers-in-sass
+// Started from https://stackoverflow.com/questions/32376461/how-to-split-a-string-into-two-lists-of-numbers-in-sass
+// modified to allow multiple contiguous separators
 @function str-split($string, $separator) {
     // empty array/list
     $split-arr: ();
@@ -23,8 +24,11 @@
     @while $index != null {
         // get the substring from the first character to the separator
         $item: str-slice($string, 1, $index - 1);
-        // push item to array
-        $split-arr: append($split-arr, $item);
+
+        @if (str-length($item) > 0) {
+          // push item to array
+          $split-arr: append($split-arr, $item);
+        }
         // remove item and separator from string
         $string: str-slice($string, $index + 1);
         // find new index of separator
@@ -34,6 +38,11 @@
     $split-arr: append($split-arr, $string);
 
     @return $split-arr;
+}
+
+@function translate-fr($value) {
+  // TODO: Actually make this work to translate fr into a value.
+  @return $value;
 }
 
 @function get-areas-matrix {
@@ -46,16 +55,16 @@
 }
 
 @function update-area-map($map, $area, $x, $y) {
-  $obj: (x: 9999999, y: 9999999, width: 0, height: 0);
+  $obj: (min-x: 9999999, min-y: 9999999, max-x: 0, max-y: 0);
   @if map-has-key($map, $area) {
-    $obj: $map-get($map, $area);
+    $obj: map-get($map, $area);
   }
 
-  $x: min(map-get($obj, x), $x);
-  $y: min(map-get($obj, y), $y);
-  $height: map-get($obj, height) + 1;
-  $width: map-get($obj, height) + 1;
-  @return map-merge($map, ($area: (x: $x, y: $y, height: $height, width: $width)))
+  $min-x: min(map-get($obj, min-x), $x);
+  $min-y: min(map-get($obj, min-y), $y);
+  $max-x: max(map-get($obj, max-x), $x);
+  $max-y: max(map-get($obj, max-y), $y);
+  @return map-merge($map, ($area: (min-x: $min-x, min-y: $min-y, max-x: $max-x, max-y: $max-y)))
 }
 
 @function get-areas-map {
@@ -64,9 +73,77 @@
   @for $y from 1 through length($matrix) {
     $row: nth($matrix, $y);
     @for $x from 1 through length($row) {
-      $area: nth($row, $y);
+      $area: nth($row, $x);
       $map: update-area-map($map, $area, $x, $y);
     }
   }
+  @return $map;
 }
 
+@function annotate-areas-map($map) {
+  $columns: map-get($-gridkit-context, columns);
+  $rows:    map-get($-gridkit-context, rows);
+  @if(type-of($columns) == 'string') {
+    $columns: str-split($columns, ' ');
+  }
+  @if(type-of($rows) == 'string') {
+    $rows: str-split($rows, ' ');
+  }
+
+  $areas: map-keys($map);
+  @for $i from 1 through length($areas) {
+    $key: nth($areas, $i);
+    $area: map-get($map, $key);
+    $widths: ();
+    $heights: ();
+
+    //TODO: Deal with auto (non explicit);
+    @for $col from map-get($area, min-x) through map-get($area, max-x) {
+      $widths: append($widths, translate-fr(nth($columns, $col)));
+    }
+    @for $row from map-get($area, min-y) through map-get($area, max-y) {
+      $heights: append($heights, translate-fr(nth($rows, $row)));
+    }
+    $area: map-merge($area, (widths: $widths, heights: $heights));
+    $map: map-merge($map, ($key: $area));
+  }
+  @return $map;
+}
+
+@function get-annotated-areas-map() {
+  $map: get-areas-map();
+  @return annotate-areas-map($map);
+}
+
+@function cached-areas-map {
+  @if map-has-key($-gridkit-context, areas-map) {
+    @return map-get($-gridkit-context, areas-map);
+  } @else { 
+    $-gridkit-context: map-merge($-gridkit-context, (areas-map: get-annotated-areas-map())) !global;
+    @return map-get($-gridkit-context, areas-map);
+  }
+}
+
+@function width-string($key) {
+  @return -calc-str($key, widths);
+}
+
+@function height-string($key) {
+  @return -calc-str($key, heights);
+}
+
+// $type should be widths or heights
+@function -calc-str($key, $type) {
+  $map: cached-areas-map();
+  $area: map-get($map, $key);
+  $values: map-get($area, $type);
+
+  $str: 'calc(' + nth($values, 1);
+  @if (length($values) > 1) {
+    @for $i from 2 through length($values) {
+      $str: $str + ' + ' nth($values, $i)
+    }
+  }
+  $str: $str + ')';
+  @return $str;
+}

@@ -4,14 +4,15 @@
   .grid {
     @include grid();
     @include grid-gap(1em 2em);
-    @include grid-template-columns(repeat(2, 1fr))
-    @include grid-template-rows(50vh 30vh repeat(7, minmax(20vh, 1fr)))
+    @include grid-template-columns(repeat(5, 1fr))
+    @include grid-template-rows(repeat(5, 25vh))
 
     @include grid-template-areas(
-      "small1 hero   hero hero med1   med1"
-      "small2 hero   hero hero med2   med2"
-      "small3 small5 big1 big1 small7 small8"
-      "small4 small6 big1 big1 small9 small10"
+      "hero   hero   hero   med1   med1"
+      "hero   hero   hero   med2   med2"
+      "big1   big1   big1   big1   big1"
+      "small1 small2 small3 small4 small5"
+      "small6 small7 small8 small9 small10"
     )
 
     .item:nth-child(1) { @include grid-area(hero) }
