@@ -40,6 +40,24 @@
     @return $split-arr;
 }
 
+// Pass in a value that can be either 1 value or 2 (x y) and return x val
+@function get-x($val) {
+  @if length($val) == 1 {
+    @return $val;
+  } @else {
+    @return nth($val, 1);
+  }
+}
+
+// Pass in a value that can be either 1 value or 2 (x y) and return y val
+@function get-y($val) {
+  @if length($val) == 1 {
+    @return $val;
+  } @else {
+    @return nth($val, 2);
+  }
+}
+
 @function is-fr($value) {
   @return (str-index(inspect($value), 'fr') != null);
 }
@@ -59,7 +77,12 @@
       }
     }
     $calcStr: '#{$calcStr})';
-    $fr-value: '((100% - #{$calcStr}) / #{$numFrs})';
+    $fr-value: '';
+    @if ($numFrs == length($vals)) {
+      $fr-value: 100% / $numFrs;
+    } @else {
+      $fr-value: '((100% - #{$calcStr}) / #{$numFrs})';
+    }
     $val: nth(str-split($value, 'fr'), 1);
     @return '(#{$val} * #{$fr-value})';
   } @else {
@@ -159,6 +182,10 @@
   $map: cached-areas-map();
   $area: map-get($map, $key);
   $values: map-get($area, $type);
+  $x-gap: 0px;
+  @if map-has-key($-gridkit-context, gap) {
+    $x-gap: get-x(map-get($-gridkit-context, gap));
+  }
 
   $str: 'calc(' + nth($values, 1);
   @if (length($values) > 1) {
@@ -166,6 +193,6 @@
       $str: '#{$str} + #{nth($values, $i)}'
     }
   }
-  $str: $str + ')';
+  $str: $str + ' - #{$x-gap})';
   @return $str;
 }
