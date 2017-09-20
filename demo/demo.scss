@@ -1,4 +1,5 @@
 $use-grid: true; // change to false to see flexbox version
+$ie-fallback: false; // change to false to remove IE version
 @import 'gridkit';
 
 @include gridkit-context {
@@ -17,7 +18,14 @@ $use-grid: true; // change to false to see flexbox version
     )
 
     @include gridkit-media(screen and (min-width: 1400px)) {
-      // TODO
+      @include grid-template-columns(repeat(6, 1fr))
+      @include grid-template-rows(auto)
+      @include grid-template-areas(
+        "small1 hero   hero hero med1   med1"
+        "small2 hero   hero hero med2   med2"
+        "small3 small5 big1 big1 small7 small8"
+        "small4 small6 big1 big1 small9 small10"
+      );
     }
 
     .item:nth-child(1) { @include grid-area(hero) }

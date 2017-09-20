@@ -1,5 +1,6 @@
 @mixin gridkit-context {
   $base: ();
+  $-gridkit-context-list: base, !global;
   $-gridkit-context: (base: $base) !global;
   $-gridkit-current-context: base !global;
   @content;
@@ -7,12 +8,30 @@
 
 @mixin gridkit-media($media) {
   @media #{$media} {
-    @unless (has-key($-gridkit-context, $media)) {
-      $-gridkit-context: map-merge($-gridkit-context, ($media: ()))
+    @if not(map-has-key($-gridkit-context, $media)) {
+      $media-obj: ();
+      $-gridkit-context-list: append($-gridkit-context-list, $media) !global;
+      $-gridkit-context: map-merge($-gridkit-context, ($media: $media-obj)) !global;
     }
-    $-gridkit-current-context: $media;
+    $-gridkit-current-context: $media !global;
     @content;
+    $-gridkit-current-context: base !global;
   }
+}
+
+/// Iterate through all contexts, setting current context and yielding to content.
+@mixin gridkit-each-context() {
+  @for $i from 1 through length($-gridkit-context-list) {
+    $-gridkit-current-context: nth($-gridkit-context-list, $i) !global;
+    @if ($-gridkit-current-context == base) {
+      @content;
+    } @else {
+      @media #{$-gridkit-current-context} {
+        @content;
+      }
+    }
+  }
+  $-gridkit-current-context: base !global;
 }
 
 @function gridkit-current-context() {
@@ -169,10 +188,18 @@
 
     //TODO: Deal with auto (non explicit);
     @for $col from map-get($area, min-x) through map-get($area, max-x) {
-      $widths: append($widths, translate-fr(nth($columns, $col), columns));
+      $width: auto;
+      @if(length($columns) >= $col) {
+        $width: translate-fr(nth($columns, $col), columns);
+      }
+      $widths: append($widths, $width);
     }
     @for $row from map-get($area, min-y) through map-get($area, max-y) {
-      $heights: append($heights, translate-fr(nth($rows, $row), rows));
+      $height: auto;
+      @if(length($rows) >= $row) {
+        $height: translate-fr(nth($rows, $row), rows);
+      }
+      $heights: append($heights, $height);
     }
     $area: map-merge($area, (widths: $widths, heights: $heights));
     $map: map-merge($map, ($key: $area));

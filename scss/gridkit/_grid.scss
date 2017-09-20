@@ -41,14 +41,13 @@
   }
 }
 
-@mixin grid-area($area) {
+@mixin -grid-area($area) {
   @if ($use-grid) {
     @supports(display: grid) {
       grid-area: $area;
     }
 
     @supports not (display: grid) {
-      @debug $area;
       @include flex-computed-area($area);
       @include flex-computed-margin();
     }
@@ -62,5 +61,18 @@
   } @else {
     @include flex-computed-area($area);
     @include flex-computed-margin();
+  }
+}
+
+/// if include-all-contexts is true (default) this will iterate through media queries and
+/// make them "just work". This is default true because "true" grid only needs to set media
+/// on parent and it will impact areas automatically.
+@mixin grid-area($area, $include-all-contexts: true) {
+  @if $-gridkit-current-context == base && $include-all-contexts {
+    @include gridkit-each-context {
+      @include -grid-area($area);
+    }
+  } @else {
+    @include -grid-area($area);
   }
 }
