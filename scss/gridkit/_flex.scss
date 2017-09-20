@@ -1,7 +1,8 @@
 
 @mixin flex-computed-margin() {
-  @if map-has-key($-gridkit-context, gap) {
-    $gap: map-get($-gridkit-context, gap);
+  $gridkit-context: gridkit-current-context();
+  @if map-has-key($gridkit-context, gap) {
+    $gap: map-get($gridkit-context, gap);
     $x: get-x($gap) / 2;
     $y: get-y($gap) / 2;
     margin: $y $x;

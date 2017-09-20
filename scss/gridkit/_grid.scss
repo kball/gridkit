@@ -13,7 +13,7 @@
 }
 
 @mixin grid-gap($gap) {
-  $-gridkit-context: map-merge($-gridkit-context, (gap: $gap)) !global;
+  $grid-context: gridkit-update-context((gap: $gap));
   @if ($use-grid) {
     grid-gap: $gap;
   }
@@ -21,21 +21,21 @@
 
 
 @mixin grid-template-columns($columns) {
-  $-gridkit-context: map-merge($-gridkit-context, (columns: $columns)) !global;
+  $grid-context: gridkit-update-context((columns: $columns));
   @if ($use-grid) {
     grid-template-columns: #{$columns};
   }
 }
 
 @mixin grid-template-rows($rows) {
-  $-gridkit-context: map-merge($-gridkit-context, (rows: $rows)) !global;
+  $grid-context: gridkit-update-context((rows: $rows));
   @if ($use-grid) {
     grid-template-rows: #{$rows};
   }
 }
 
 @mixin grid-template-areas($areas) {
-  $-gridkit-context: map-merge($-gridkit-context, (areas: $areas)) !global;
+  $grid-context: gridkit-update-context((areas: $areas));
   @if ($use-grid) {
     grid-template-areas: $areas;
   }
@@ -48,12 +48,13 @@
     }
 
     @supports not (display: grid) {
+      @debug $area;
       @include flex-computed-area($area);
       @include flex-computed-margin();
     }
 
     @if ($ie-fallback) {
-      @media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {  
+      @media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {
         @include flex-computed-area($area);
         @include flex-computed-margin();
       }

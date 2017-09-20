@@ -1,7 +1,30 @@
-@mixin grid-context {
-  $-gridkit-context: () !global;
+@mixin gridkit-context {
+  $base: ();
+  $-gridkit-context: (base: $base) !global;
+  $-gridkit-current-context: base !global;
   @content;
 }
+
+@mixin gridkit-media($media) {
+  @media #{$media} {
+    @unless (has-key($-gridkit-context, $media)) {
+      $-gridkit-context: map-merge($-gridkit-context, ($media: ()))
+    }
+    $-gridkit-current-context: $media;
+    @content;
+  }
+}
+
+@function gridkit-current-context() {
+  @return map-get($-gridkit-context, $-gridkit-current-context);
+}
+
+@function gridkit-update-context($content) {
+  $context: map-merge(gridkit-current-context(), $content);
+  $-gridkit-context: map-merge($-gridkit-context, ($-gridkit-current-context: $context)) !global;
+  @return gridkit-current-context();
+}
+
 
 // In order to be compatible across grid and flex we need to translate repeats
 // into explicit
@@ -65,7 +88,8 @@
 // $direction should be either columns or rows
 @function translate-fr($value, $direction) {
   @if (is-fr($value)) {
-    $vals: str-split(map-get($-gridkit-context, $direction), ' ');
+    $gridkit-context: gridkit-current-context();
+    $vals: str-split(map-get($gridkit-context, $direction), ' ');
     $numFrs: 0;
     $calcStr: '(0';
     @for $i from 1 through length($vals) {
@@ -91,7 +115,7 @@
 }
 
 @function get-areas-matrix {
-  $areas: map-get($-gridkit-context, areas);
+  $areas: map-get(gridkit-current-context(), areas);
   $matrix: ();
   @for $i from 1 through length($areas) {
     $matrix: append($matrix, str-split(nth($areas, $i), " "));
@@ -126,8 +150,9 @@
 }
 
 @function annotate-areas-map($map) {
-  $columns: map-get($-gridkit-context, columns);
-  $rows:    map-get($-gridkit-context, rows);
+  $gridkit-context: gridkit-current-context();
+  $columns: map-get($gridkit-context, columns);
+  $rows:    map-get($gridkit-context, rows);
   @if(type-of($columns) == 'string') {
     $columns: str-split($columns, ' ');
   }
@@ -161,11 +186,12 @@
 }
 
 @function cached-areas-map {
-  @if map-has-key($-gridkit-context, areas-map) {
-    @return map-get($-gridkit-context, areas-map);
+  $gridkit-context: gridkit-current-context();
+  @if map-has-key($gridkit-context, areas-map) {
+    @return map-get($gridkit-context, areas-map);
   } @else {
-    $-gridkit-context: map-merge($-gridkit-context, (areas-map: get-annotated-areas-map())) !global;
-    @return map-get($-gridkit-context, areas-map);
+    $gridkit-context: gridkit-update-context((areas-map: get-annotated-areas-map()));
+    @return map-get($gridkit-context, areas-map);
   }
 }
 
@@ -183,8 +209,9 @@
   $area: map-get($map, $key);
   $values: map-get($area, $type);
   $x-gap: 0px;
-  @if map-has-key($-gridkit-context, gap) {
-    $x-gap: get-x(map-get($-gridkit-context, gap));
+  $gridkit-context: gridkit-current-context();
+  @if map-has-key($gridkit-context, gap) {
+    $x-gap: get-x(map-get($gridkit-context, gap));
   }
 
   $str: 'calc(' + nth($values, 1);

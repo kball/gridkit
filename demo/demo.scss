@@ -1,7 +1,7 @@
 $use-grid: true; // change to false to see flexbox version
 @import 'gridkit';
 
-@include grid-context {
+@include gridkit-context {
   .grid {
     @include grid();
     @include grid-gap(1em 2em);
@@ -15,6 +15,10 @@ $use-grid: true; // change to false to see flexbox version
       "small1 small2 small3 small4 small5"
       "small6 small7 small8 small9 small10"
     )
+
+    @include gridkit-media(screen and (min-width: 1400px)) {
+      // TODO
+    }
 
     .item:nth-child(1) { @include grid-area(hero) }
     .item:nth-child(2) { @include grid-area(big1) }
