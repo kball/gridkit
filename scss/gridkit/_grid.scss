@@ -1,10 +1,11 @@
 @import 'gridkit/flex';
 
-@mixin grid() {
+@mixin grid($grid-max-width) {
   display: flex;
   flex-flow: row;
   flex-wrap: wrap;
-  max-width: 100vw;
+  max-width: $grid-max-width;
+  margin: 0 auto;
   @if ($use-grid) {
     @supports(display: grid) {
       display: grid;
