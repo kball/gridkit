@@ -3,7 +3,11 @@
 }
 
 @function -flex-minwidth-string($key) {
-  @return -flex-calc-str($key, widths, false);
+  @if -flex-needs-min(columns) {
+    @return -flex-calc-str($key, widths, false);
+  } @else {
+    @return auto;
+  }
 }
 
 @function -flex-height-string($key) {
@@ -11,7 +15,11 @@
 }
 
 @function -flex-minheight-string($key) {
-  @return -flex-calc-str($key, heights, false);
+  @if -flex-needs-min(rows) {
+    @return -flex-calc-str($key, heights, false);
+  } @else {
+    @return auto;
+  }
 }
 
 @function -flex-needs-min($type) {
@@ -23,12 +31,7 @@
 
 // $type should be widths or heights
 @function -flex-calc-str($key, $type, $use-max: true) {
-  $map: null;
-  @if $use-max {
-    $map: cached-areas-map();
-  } @else {
-    $map: get-annotated-areas-map(false);
-  }
+  $map: get-annotated-areas-map($use-max);
   $area: map-get($map, $key);
   $values: map-get($area, $type);
   $x-gap: 0px;
@@ -60,11 +63,7 @@
 @mixin flex-computed-area($area) {
   flex: 0 1 auto;
   width: #{-flex-width-string($area)};
-  @if -flex-needs-min(columns) {
-    min-width: #{-flex-minwidth-string($area)};
-  }
+  min-width: #{-flex-minwidth-string($area)};
   height: #{-flex-height-string($area)};
-  @if -flex-needs-min(rows) {
-    min-height: #{-flex-minheight-string($area)};
-  }
+  min-height: #{-flex-minheight-string($area)};
 }

@@ -279,6 +279,7 @@
   @return annotate-areas-map($map, $use-max);
 }
 
+// TODO: Figure out if we can get caching working. right now its not playing nicely with contexts
 @function cached-areas-map {
   $gridkit-context: map-merge(gridkit-base-context(), gridkit-current-context());
   @if map-has-key($gridkit-context, areas-map) {
