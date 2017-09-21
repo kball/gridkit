@@ -1,5 +1,5 @@
 $use-grid: true; // change to false to see flexbox version
-$ie-fallback: false; // change to false to remove IE version
+$ie-fallback: true; // change to false to remove IE version
 @import 'gridkit';
 
 @include gridkit-context {
@@ -71,6 +71,10 @@ body {
   margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   background: #29343d;
+}
+
+a {
+  color: #fff;
 }
 
 @supports not (display: grid) {
