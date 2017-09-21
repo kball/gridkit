@@ -177,7 +177,7 @@ a {
 .tooltip {
   position: absolute;
   z-index: 1;
-  padding: 0.25rem 1rem;
+  padding: 0.75rem 1rem;
   border-radius: 5px;
   background: #29343d;
   opacity: 0;
@@ -208,7 +208,7 @@ a {
   position: relative;
   
   .box {
-    position: absolute;
+    position: relative;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
