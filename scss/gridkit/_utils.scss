@@ -1,57 +1,9 @@
-@mixin gridkit-context {
-  $base: ();
-  $-gridkit-context-list: base, !global;
-  $-gridkit-context: (base: $base) !global;
-  $-gridkit-current-context: base !global;
-  @content;
-}
+@import 'gridkit/context';
 
-@mixin gridkit-media($media) {
-  @media #{$media} {
-    @if not(map-has-key($-gridkit-context, $media)) {
-      $media-obj: ();
-      $-gridkit-context-list: append($-gridkit-context-list, $media) !global;
-      $-gridkit-context: map-merge($-gridkit-context, ($media: $media-obj)) !global;
-    }
-    $-gridkit-current-context: $media !global;
-    @content;
-    $-gridkit-current-context: base !global;
-  }
-}
-
-
-/// Iterate through all contexts, setting current context and yielding to content.
-@mixin gridkit-each-context() {
-  @for $i from 1 through length($-gridkit-context-list) {
-    $-gridkit-current-context: nth($-gridkit-context-list, $i) !global;
-    @if ($-gridkit-current-context == base) {
-      @content;
-    } @else {
-      @media #{$-gridkit-current-context} {
-        @content;
-      }
-    }
-  }
-  $-gridkit-current-context: base !global;
-}
-
-@function gridkit-base-context() {
-  @return map-get($-gridkit-context, base);
-}
-
-@function gridkit-current-context() {
-  @return map-get($-gridkit-context, $-gridkit-current-context);
-}
-
-@function gridkit-update-context($content) {
-  $context: map-merge(gridkit-current-context(), $content);
-  $-gridkit-context: map-merge($-gridkit-context, ($-gridkit-current-context: $context)) !global;
-  @return gridkit-current-context();
-}
-
-
-// In order to be compatible across grid and flex we need to translate repeats
-// into explicit
+/// In order to be compatible across grid and flex we need to translate repeats
+/// into explicit
+/// TODO: Change this to an explicit transformation via strings for flexbox etc so
+/// it doesn't change the output grid code.
 @function repeat($count, $val) {
   $str: $val;
   @for $i from 2 through $count {
@@ -60,9 +12,17 @@
   @return $str;
 }
 
-// Started from https://stackoverflow.com/questions/32376461/how-to-split-a-string-into-two-lists-of-numbers-in-sass
-// modified to allow multiple contiguous separators
-@function str-split($string, $separator) {
+/// Started from https://stackoverflow.com/questions/32376461/how-to-split-a-string-into-two-lists-of-numbers-in-sass
+/// modified to allow multiple contiguous separators
+
+/// @access private
+///
+/// @param {String} $string - String to separate.
+/// @param {String} $separator - String to use as separator.
+///
+/// @returns {List} A list of substrings separated by the separator
+
+@function -gk-str-split($string, $separator) {
     // empty array/list
     $split-arr: ();
     // first index of separator in string
@@ -87,36 +47,58 @@
     @return $split-arr;
 }
 
-// Pass in a value that can be either 1 value or 2 (x y) and return x val
-@function get-x($val) {
+/// @access private
+///
+/// @param {List} $val - Set of either single (x&y) or double (x y) values.
+/// @param {Number} $offset - Whether you'd like x (1) or y (2) value
+
+/// @returns {Number} The value you asked for, either x or y
+@function -gk-get-xy-val($val, $offset) {
   @if length($val) == 1 {
     @return $val;
   } @else {
-    @return nth($val, 1);
+    @return nth($val, $offset);
   }
 }
-
-// Pass in a value that can be either 1 value or 2 (x y) and return y val
-@function get-y($val) {
-  @if length($val) == 1 {
-    @return $val;
-  } @else {
-    @return nth($val, 2);
-  }
+/// @access private
+///
+/// @param {List} $val - Set of either single (x&y) or double (x y) values.
+///
+/// @returns {Number} The x value
+@function -gk-get-x($val) {
+  @return -gk-get-xy-val($val, 1);
 }
 
-@function is-fr($value) {
+/// @access private
+///
+/// @param {List} $val - Set of either single (x&y) or double (x y) values.
+///
+/// @returns {Number} The y value
+@function -gk-get-y($val) {
+  @return -gk-get-xy-val($val, 2);
+}
+
+/// @access private
+///
+/// @param {Number} $value - A CSS value that we want to check for 'fr' unit.
+///
+/// @returns {boolean} If the unit is 'fr'
+@function -gk-is-fr($value) {
   @return (str-index(inspect($value), 'fr') != null);
 }
 
-
-@function -has-minmax($str) {
+/// @access private
+///
+/// @param {Mixed} $str - A CSS value or string of value that we want to see if it has 'minmax' in it
+///
+/// @returns {boolean} If the value has 'minmax' in it.
+@function -gk-has-minmax($str) {
   @return (str-index(inspect($str), ' minmax') != null);
 }
 
-/// Replaces minmax with the larger value. Used to set height
+/// Replaces minmax with the larger value. Used to set height or width
 /// For now only handles simple (non-nested) minmax. TODO: Make more robust
-@function -maxval-minmax($str) {
+@function -gk-maxval-minmax($str) {
   $str: inspect($str);
   $new-str: '';
   $idx: str-index($str, ' minmax');
@@ -136,7 +118,7 @@
 
 /// Replaces minmax with the smaller value. Used to set min-height
 /// For now only handles simple (non-nested) minmax. TODO: Make more robust
-@function -minval-minmax($str) {
+@function -gk-minval-minmax($str) {
   $str: inspect($str);
   $new-str: '';
   $idx: str-index($str, ' minmax');
@@ -156,25 +138,25 @@
 
 @function gridkit-maxout-grid($grid-value) {
   $strval: inspect($grid-value);
-  $strval: -maxval-minmax($strval);
+  $strval: -gk-maxval-minmax($strval);
   @return #{$strval};
 }
 
 // $direction should be either columns or rows
-@function translate-fr($value, $direction, $use-max) {
-  @if (is-fr($value)) {
+@function -gk-translate-fr($value, $direction, $use-max) {
+  @if (-gk-is-fr($value)) {
     $gridkit-context: gridkit-current-context();
     $vals: map-get($gridkit-context, $direction);
     @if $use-max {
-      $vals: str-split(-maxval-minmax($vals), ' ');
+      $vals: -gk-str-split(-gk-maxval-minmax($vals), ' ');
     } @else {
-      $vals: str-split(-minval-minmax($vals), ' ');
+      $vals: -gk-str-split(-gk-minval-minmax($vals), ' ');
     }
     $numFrs: 0;
     $calcStr: '(0px';
     @for $i from 1 through length($vals) {
       $val: nth($vals, $i);
-      @if (is-fr($val)) {
+      @if (-gk-is-fr($val)) {
         $numFrs: $numFrs + 1;
       } @else {
         $calcStr: '#{$calcStr} + #{$val}';
@@ -187,7 +169,7 @@
     } @else {
       $fr-value: '((100% - #{$calcStr}) / #{$numFrs})';
     }
-    $val: nth(str-split($value, 'fr'), 1);
+    $val: nth(-gk-str-split($value, 'fr'), 1);
     @return '(#{$val} * #{$fr-value})';
   } @else {
     @return $value;
@@ -198,7 +180,7 @@
   $areas: map-get(gridkit-current-context(), areas);
   $matrix: ();
   @for $i from 1 through length($areas) {
-    $matrix: append($matrix, str-split(nth($areas, $i), " "));
+    $matrix: append($matrix, -gk-str-split(nth($areas, $i), " "));
   }
   @return $matrix;
 }
@@ -236,15 +218,15 @@
 
   // Normalize to max value or min value from minmax
   @if $use-max {
-    $columns: -maxval-minmax($columns);
-    $rows: -maxval-minmax($rows);
+    $columns: -gk-maxval-minmax($columns);
+    $rows: -gk-maxval-minmax($rows);
   } @else {
-    $columns: -minval-minmax($columns);
-    $rows: -minval-minmax($rows);
+    $columns: -gk-minval-minmax($columns);
+    $rows: -gk-minval-minmax($rows);
   }
 
-  $columns: str-split($columns, ' ');
-  $rows: str-split($rows, ' ');
+  $columns: -gk-str-split($columns, ' ');
+  $rows: -gk-str-split($rows, ' ');
 
   $areas: map-keys($map);
   @for $i from 1 through length($areas) {
@@ -257,14 +239,14 @@
     @for $col from map-get($area, min-x) through map-get($area, max-x) {
       $width: auto;
       @if(length($columns) >= $col) {
-        $width: translate-fr(nth($columns, $col), columns, $use-max);
+        $width: -gk-translate-fr(nth($columns, $col), columns, $use-max);
       }
       $widths: append($widths, $width);
     }
     @for $row from map-get($area, min-y) through map-get($area, max-y) {
       $height: auto;
       @if(length($rows) >= $row) {
-        $height: translate-fr(nth($rows, $row), rows, $use-max);
+        $height: -gk-translate-fr(nth($rows, $row), rows, $use-max);
       }
       $heights: append($heights, $height);
     }

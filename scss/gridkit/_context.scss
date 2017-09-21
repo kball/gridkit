@@ -1,0 +1,51 @@
+@mixin gridkit-context {
+  $base: ();
+  $-gridkit-context-list: base, !global;
+  $-gridkit-context: (base: $base) !global;
+  $-gridkit-current-context: base !global;
+  @content;
+}
+
+@mixin gridkit-media($media) {
+  @media #{$media} {
+    @if not(map-has-key($-gridkit-context, $media)) {
+      $media-obj: ();
+      $-gridkit-context-list: append($-gridkit-context-list, $media) !global;
+      $-gridkit-context: map-merge($-gridkit-context, ($media: $media-obj)) !global;
+    }
+    $-gridkit-current-context: $media !global;
+    @content;
+    $-gridkit-current-context: base !global;
+  }
+}
+
+
+/// Iterate through all contexts, setting current context and yielding to content.
+@mixin gridkit-each-context() {
+  @for $i from 1 through length($-gridkit-context-list) {
+    $-gridkit-current-context: nth($-gridkit-context-list, $i) !global;
+    @if ($-gridkit-current-context == base) {
+      @content;
+    } @else {
+      @media #{$-gridkit-current-context} {
+        @content;
+      }
+    }
+  }
+  $-gridkit-current-context: base !global;
+}
+
+@function gridkit-base-context() {
+  @return map-get($-gridkit-context, base);
+}
+
+@function gridkit-current-context() {
+  @return map-get($-gridkit-context, $-gridkit-current-context);
+}
+
+@function gridkit-update-context($content) {
+  $context: map-merge(gridkit-current-context(), $content);
+  $-gridkit-context: map-merge($-gridkit-context, ($-gridkit-current-context: $context)) !global;
+  @return gridkit-current-context();
+}
+

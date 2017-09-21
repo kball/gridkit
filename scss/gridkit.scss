@@ -1,5 +1,6 @@
 $use-grid: true !default;
 $ie-fallback: true !default;
 
+@import 'gridkit/context';
 @import 'gridkit/utils';
 @import 'gridkit/grid';

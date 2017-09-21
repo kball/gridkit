@@ -1,3 +1,4 @@
+@import 'gridkit/context';
 @function -flex-width-string($key) {
   @return -flex-calc-str($key, widths);
 }
@@ -25,7 +26,7 @@
 @function -flex-needs-min($type) {
   $gridkit-context: gridkit-current-context();
   $values: map-get-key($gridkit-context, $type);
-  @return -has-minmax($values);
+  @return -gk-has-minmax($values);
 }
 
 
@@ -37,7 +38,7 @@
   $x-gap: 0px;
   $gridkit-context: map-merge(gridkit-base-context(), gridkit-current-context());
   @if map-has-key($gridkit-context, gap) {
-    $x-gap: get-x(map-get($gridkit-context, gap));
+    $x-gap: -gk-get-x(map-get($gridkit-context, gap));
   }
 
   $str: 'calc(' + nth($values, 1);
@@ -54,8 +55,8 @@
   $gridkit-context: map-merge(gridkit-base-context(), gridkit-current-context());
   @if map-has-key($gridkit-context, gap) {
     $gap: map-get($gridkit-context, gap);
-    $x: get-x($gap) / 2;
-    $y: get-y($gap) / 2;
+    $x: -gk-get-x($gap) / 2;
+    $y: -gk-get-y($gap) / 2;
     margin: $y $x;
   }
 }
