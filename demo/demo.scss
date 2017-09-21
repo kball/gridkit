@@ -1,10 +1,10 @@
 $use-grid: true; // change to false to see flexbox version
-$ie-fallback: false; // change to false to remove IE version
+$ie-fallback: true; // change to false to remove IE version
 @import 'gridkit';
 
 @include gridkit-context {
   .grid {
-    @include grid();
+    @include grid(95vw);
     @include grid-gap(1em 2em);
     @include grid-template-columns(repeat(2, 1fr));
     @include grid-template-rows(50vh 30vh repeat(7, minmax(20vh, 1fr)));
@@ -71,6 +71,10 @@ body {
   margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   background: #29343d;
+}
+
+a {
+  color: #fff;
 }
 
 @supports not (display: grid) {
@@ -173,7 +177,7 @@ body {
 .tooltip {
   position: absolute;
   z-index: 1;
-  padding: 0.25rem 1rem;
+  padding: 0.75rem 1rem;
   border-radius: 5px;
   background: #29343d;
   opacity: 0;
@@ -202,6 +206,14 @@ body {
 
 .grid .item {
   position: relative;
+  
+  .box {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
   padding: 1vw;
   background-position:  left bottom;
   background-size: 150% 100%;
