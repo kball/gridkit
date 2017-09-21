@@ -1,6 +1,54 @@
+@function -flex-width-string($key) {
+  @return -flex-calc-str($key, widths);
+}
+
+@function -flex-minwidth-string($key) {
+  @return -flex-calc-str($key, widths, false);
+}
+
+@function -flex-height-string($key) {
+  @return -flex-calc-str($key, heights);
+}
+
+@function -flex-minheight-string($key) {
+  @return -flex-calc-str($key, heights, false);
+}
+
+@function -flex-needs-min($type) {
+  $gridkit-context: gridkit-current-context();
+  $values: map-get-key($gridkit-context, $type);
+  @return -has-minmax($values);
+}
+
+
+// $type should be widths or heights
+@function -flex-calc-str($key, $type, $use-max: true) {
+  $map: null;
+  @if $use-max {
+    $map: cached-areas-map();
+  } @else {
+    $map: get-annotated-areas-map(false);
+  }
+  $area: map-get($map, $key);
+  $values: map-get($area, $type);
+  $x-gap: 0px;
+  $gridkit-context: map-merge(gridkit-base-context(), gridkit-current-context());
+  @if map-has-key($gridkit-context, gap) {
+    $x-gap: get-x(map-get($gridkit-context, gap));
+  }
+
+  $str: 'calc(' + nth($values, 1);
+  @if (length($values) > 1) {
+    @for $i from 2 through length($values) {
+      $str: '#{$str} + #{nth($values, $i)}'
+    }
+  }
+  $str: $str + ' - #{$x-gap})';
+  @return $str;
+}
 
 @mixin flex-computed-margin() {
-  $gridkit-context: gridkit-current-context();
+  $gridkit-context: map-merge(gridkit-base-context(), gridkit-current-context());
   @if map-has-key($gridkit-context, gap) {
     $gap: map-get($gridkit-context, gap);
     $x: get-x($gap) / 2;
@@ -11,6 +59,12 @@
 
 @mixin flex-computed-area($area) {
   flex: 0 1 auto;
-  width: #{width-string($area)};
-  height: #{height-string($area)};
+  width: #{-flex-width-string($area)};
+  @if -flex-needs-min(columns) {
+    min-width: #{-flex-minwidth-string($area)};
+  }
+  height: #{-flex-height-string($area)};
+  @if -flex-needs-min(rows) {
+    min-height: #{-flex-minheight-string($area)};
+  }
 }

@@ -19,6 +19,7 @@
   }
 }
 
+
 /// Iterate through all contexts, setting current context and yielding to content.
 @mixin gridkit-each-context() {
   @for $i from 1 through length($-gridkit-context-list) {
@@ -32,6 +33,10 @@
     }
   }
   $-gridkit-current-context: base !global;
+}
+
+@function gridkit-base-context() {
+  @return map-get($-gridkit-context, base);
 }
 
 @function gridkit-current-context() {
@@ -104,13 +109,69 @@
   @return (str-index(inspect($value), 'fr') != null);
 }
 
+
+@function -has-minmax($str) {
+  @return (str-index(inspect($str), ' minmax') != null);
+}
+
+/// Replaces minmax with the larger value. Used to set height
+/// For now only handles simple (non-nested) minmax. TODO: Make more robust
+@function -maxval-minmax($str) {
+  $str: inspect($str);
+  $new-str: '';
+  $idx: str-index($str, ' minmax');
+  @while ($idx != null) {
+    $new-str: $new-str + str-slice($str, 1, $idx - 1);
+    $str: str-slice($str, $idx + str-length(' minmax') + 1); // cut minmax and paren
+    $comma-idx: str-index($str, ',');
+    $str: str-slice($str, $comma-idx + 1); // cut first value and comma
+    $close-idx: str-index($str, ')');
+    $new-str: $new-str + str-slice($str, 1, $close-idx - 1);
+    $str: str-slice($str, $close-idx + 1);
+    $idx: str-index($str, ' minmax');
+  }
+  $new-str: $new-str + $str;
+  @return $new-str;
+}
+
+/// Replaces minmax with the smaller value. Used to set min-height
+/// For now only handles simple (non-nested) minmax. TODO: Make more robust
+@function -minval-minmax($str) {
+  $str: inspect($str);
+  $new-str: '';
+  $idx: str-index($str, ' minmax');
+  @while ($idx != null) {
+    $new-str: $new-str + str-slice($str, 1, $idx);
+    $str: str-slice($str, $idx + str-length(' minmax') + 1); // cut minmax and paren
+    $comma-idx: str-index($str, ',');
+    $new-str: $new-str + str-slice($str, 1, $comma-idx - 1); // cut first value and comma
+    $close-idx: str-index($str, ')');
+    $str: str-slice($str, $close-idx + 1);
+    $idx: str-index($str, ' minmax');
+  }
+  $new-str: $new-str + $str;
+
+  @return $new-str;
+}
+
+@function gridkit-maxout-grid($grid-value) {
+  $strval: inspect($grid-value);
+  $strval: -maxval-minmax($strval);
+  @return #{$strval};
+}
+
 // $direction should be either columns or rows
-@function translate-fr($value, $direction) {
+@function translate-fr($value, $direction, $use-max) {
   @if (is-fr($value)) {
     $gridkit-context: gridkit-current-context();
-    $vals: str-split(map-get($gridkit-context, $direction), ' ');
+    $vals: map-get($gridkit-context, $direction);
+    @if $use-max {
+      $vals: str-split(-maxval-minmax($vals), ' ');
+    } @else {
+      $vals: str-split(-minval-minmax($vals), ' ');
+    }
     $numFrs: 0;
-    $calcStr: '(0';
+    $calcStr: '(0px';
     @for $i from 1 through length($vals) {
       $val: nth($vals, $i);
       @if (is-fr($val)) {
@@ -168,16 +229,22 @@
   @return $map;
 }
 
-@function annotate-areas-map($map) {
+@function annotate-areas-map($map, $use-max: true) {
   $gridkit-context: gridkit-current-context();
   $columns: map-get($gridkit-context, columns);
   $rows:    map-get($gridkit-context, rows);
-  @if(type-of($columns) == 'string') {
-    $columns: str-split($columns, ' ');
+
+  // Normalize to max value or min value from minmax
+  @if $use-max {
+    $columns: -maxval-minmax($columns);
+    $rows: -maxval-minmax($rows);
+  } @else {
+    $columns: -minval-minmax($columns);
+    $rows: -minval-minmax($rows);
   }
-  @if(type-of($rows) == 'string') {
-    $rows: str-split($rows, ' ');
-  }
+
+  $columns: str-split($columns, ' ');
+  $rows: str-split($rows, ' ');
 
   $areas: map-keys($map);
   @for $i from 1 through length($areas) {
@@ -190,14 +257,14 @@
     @for $col from map-get($area, min-x) through map-get($area, max-x) {
       $width: auto;
       @if(length($columns) >= $col) {
-        $width: translate-fr(nth($columns, $col), columns);
+        $width: translate-fr(nth($columns, $col), columns, $use-max);
       }
       $widths: append($widths, $width);
     }
     @for $row from map-get($area, min-y) through map-get($area, max-y) {
       $height: auto;
       @if(length($rows) >= $row) {
-        $height: translate-fr(nth($rows, $row), rows);
+        $height: translate-fr(nth($rows, $row), rows, $use-max);
       }
       $heights: append($heights, $height);
     }
@@ -207,46 +274,17 @@
   @return $map;
 }
 
-@function get-annotated-areas-map() {
+@function get-annotated-areas-map($use-max: true) {
   $map: get-areas-map();
-  @return annotate-areas-map($map);
+  @return annotate-areas-map($map, $use-max);
 }
 
 @function cached-areas-map {
-  $gridkit-context: gridkit-current-context();
+  $gridkit-context: map-merge(gridkit-base-context(), gridkit-current-context());
   @if map-has-key($gridkit-context, areas-map) {
     @return map-get($gridkit-context, areas-map);
   } @else {
     $gridkit-context: gridkit-update-context((areas-map: get-annotated-areas-map()));
     @return map-get($gridkit-context, areas-map);
   }
-}
-
-@function width-string($key) {
-  @return -calc-str($key, widths);
-}
-
-@function height-string($key) {
-  @return -calc-str($key, heights);
-}
-
-// $type should be widths or heights
-@function -calc-str($key, $type) {
-  $map: cached-areas-map();
-  $area: map-get($map, $key);
-  $values: map-get($area, $type);
-  $x-gap: 0px;
-  $gridkit-context: gridkit-current-context();
-  @if map-has-key($gridkit-context, gap) {
-    $x-gap: get-x(map-get($gridkit-context, gap));
-  }
-
-  $str: 'calc(' + nth($values, 1);
-  @if (length($values) > 1) {
-    @for $i from 2 through length($values) {
-      $str: '#{$str} + #{nth($values, $i)}'
-    }
-  }
-  $str: $str + ' - #{$x-gap})';
-  @return $str;
 }
