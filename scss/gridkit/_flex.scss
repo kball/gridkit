@@ -61,10 +61,54 @@
   }
 }
 
+@mixin flex-grid-gap() {
+  > * {
+    @include flex-computed-margin();
+  }
+}
+
 @mixin flex-computed-area($area) {
   flex: 0 1 auto;
   width: #{-flex-width-string($area)};
   min-width: #{-flex-minwidth-string($area)};
   height: #{-flex-height-string($area)};
   min-height: #{-flex-minheight-string($area)};
+}
+
+@mixin flex-default-columns() {
+  $needs-min: -flex-needs-min(columns);
+  $widths: -gk-get-column-widths();
+  $maxwidth: "0px";
+  $minwidths: ();
+  $len: length($widths);
+  @if ($needs-min) {
+    $minwidths: -gk-get-column-minwidths();
+  }
+  > * {
+    flex: 0 1 auto;
+    box-sizing: border-box;
+  }
+  @for $i from 1 through $len {
+    $width: nth($widths, $i);
+    $maxwidth: "#{$maxwidth} + #{$width}";
+    > :nth-child(#{$i}n) {
+      width: #{$width};
+      @if ($needs-min) {
+        min-width: #{nth($minwidths, $i)};
+      }
+    }
+  }
+
+  $gridkit-context: map-merge(gridkit-base-context(), gridkit-current-context());
+  @if map-has-key($gridkit-context, gap) {
+    $x-gap: -gk-get-x(map-get($gridkit-context, gap));
+    $maxwidth: "#{$maxwidth} + (#{$len} * #{$x-gap})";
+  }
+  > :nth-child(#{$len}n) {
+    margin-right: calc(100% - (#{$maxwidth}));
+  }
+}
+
+@mixin flex-default-rows() {
+  // todo
 }

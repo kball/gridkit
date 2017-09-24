@@ -1,12 +1,10 @@
 @import 'gridkit/flex';
 @import 'gridkit/context';
 
-@mixin grid($grid-max-width) {
+@mixin grid() {
   display: flex;
   flex-flow: row;
   flex-wrap: wrap;
-  max-width: $grid-max-width;
-  margin: 0 auto;
   @if ($use-grid) {
     @supports(display: grid) {
       display: grid;
@@ -18,6 +16,16 @@
   $grid-context: gridkit-update-context((gap: $gap));
   @if ($use-grid) {
     grid-gap: $gap;
+    @supports not (display: grid) {
+      @include flex-grid-gap();
+    }
+    @if ($ie-fallback) {
+      @media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {
+        @include flex-grid-gap();
+      }
+    }
+  } @else {
+    @include flex-grid-gap();
   }
 }
 
@@ -26,6 +34,16 @@
   $grid-context: gridkit-update-context((columns: $columns));
   @if ($use-grid) {
     grid-template-columns: #{$columns};
+    @supports not (display: grid) {
+      @include flex-default-columns();
+    }
+    @if ($ie-fallback) {
+      @media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {
+        @include flex-default-columns();
+      }
+    }
+  } @else {
+    @include flex-default-columns();
   }
 }
 
@@ -33,7 +51,19 @@
   $grid-context: gridkit-update-context((rows: $rows));
   @if ($use-grid) {
     grid-template-rows: #{$rows};
+
+    @supports not (display: grid) {
+      @include flex-default-rows();
+    }
+    @if ($ie-fallback) {
+      @media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {
+        @include flex-default-rows();
+      }
+    }
+  } @else {
+    @include flex-default-rows();
   }
+
 }
 
 @mixin grid-template-areas($areas) {
@@ -48,12 +78,10 @@
     @supports(display: grid) {
       grid-area: $area;
     }
-
     @supports not (display: grid) {
       @include flex-computed-area($area);
       @include flex-computed-margin();
     }
-
     @if ($ie-fallback) {
       @media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {
         @include flex-computed-area($area);
@@ -64,6 +92,7 @@
     @include flex-computed-area($area);
     @include flex-computed-margin();
   }
+
 }
 
 /// if include-all-contexts is true (default) this will iterate through media queries and

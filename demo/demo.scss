@@ -4,7 +4,9 @@ $ie-fallback: true; // change to false to remove IE version
 
 @include gridkit-context {
   .grid {
-    @include grid(95vw);
+    @include grid();
+    max-width: 95vw;
+    margin: 0 auto;
     @include grid-gap(1em 2em);
     @include grid-template-columns(repeat(2, 1fr));
     @include grid-template-rows(50vh 30vh repeat(7, minmax(20vh, 1fr)));
@@ -206,7 +208,7 @@ a {
 
 .grid .item {
   position: relative;
-  
+
   .box {
     position: relative;
     top: 50%;

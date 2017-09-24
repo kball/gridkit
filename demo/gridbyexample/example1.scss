@@ -1,0 +1,26 @@
+$use-grid: true; // change to false to see flexbox version
+$ie-fallback: true; // change to false to remove IE version
+@import 'gridkit';
+
+body {
+  margin: 40px;
+}
+
+@include gridkit-context {
+
+  .wrapper {
+    @include grid;
+    @include grid-gap(10px);
+    @include grid-template-columns(100px 100px 100px);
+    background-color: #fff;
+    color: #444;
+  }
+
+  .box {
+    background-color: #444;
+    color: #fff;
+    border-radius: 5px;
+    padding: 20px;
+    font-size: 150%;
+  }
+}

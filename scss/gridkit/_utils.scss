@@ -175,6 +175,29 @@
     @return $value;
   }
 }
+@function -gk-column-widths($use-max) {
+  $gridkit-context: gridkit-current-context();
+  $columns: map-get($gridkit-context, columns);
+  $widths: ();
+  @if ($use-max) {
+    $columns: -gk-str-split(-gk-maxval-minmax($columns), ' ');
+  } @else {
+    $columns: -gk-str-split(-gk-minval-minmax($columns), ' ');
+  }
+  @for $i from 1 through length($columns) {
+    $width: -gk-translate-fr(nth($columns, $i), columns, $use-max);
+    $widths: append($widths, $width);
+  }
+  @return $widths;
+}
+
+@function -gk-get-column-widths() {
+  @return -gk-column-widths($use-max: true);
+}
+
+@function -gk-get-column-minwidths() {
+  @return -gk-column-widths($use-max: false);
+}
 
 @function get-areas-matrix {
   $areas: map-get(gridkit-current-context(), areas);

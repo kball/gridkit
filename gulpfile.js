@@ -4,7 +4,7 @@ var browser = require('browser-sync');
 
 var $ = plugins();
 
-var ENTRIES = ['demo/demo.scss'];
+var ENTRIES = ['demo/**/*.scss'];
 
 var COMPATIBILITY = [ "last 2 version", "ie >= 9", "ios >= 7" ];
 
@@ -17,7 +17,7 @@ gulp.series('build', server, watch));
 
 // Copy demo index file
 function copy() {
-  return gulp.src(['demo/index.html'])
+  return gulp.src(['demo/**/*.html'])
     .pipe(gulp.dest('dist'));
 }
 
@@ -51,6 +51,6 @@ function reload(done) {
 }
 // Watch for changes to static assets, pages, Sass, and JavaScript
 function watch() {
-  gulp.watch(['scss/**/*.scss', 'demo/*.scss']).on('all', sass);
-  gulp.watch('demo/*.html').on('all', gulp.series(copy, browser.reload));
+  gulp.watch(['scss/**/*.scss', 'demo/**/*.scss']).on('all', sass);
+  gulp.watch('demo/**/*.html').on('all', gulp.series(copy, browser.reload));
 }
